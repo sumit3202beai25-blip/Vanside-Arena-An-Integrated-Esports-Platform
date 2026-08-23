@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Admin Dashboard | Vanside Arena</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* small admin tweaks */
+        .admin-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px
+        }
+
+        .admin-tab {
+            padding: 8px 12px;
+            cursor: pointer
+        }
+
+        .admin-tab.active {
+            background: var(--accent);
+            color: var(--bg);
+            border-radius: 6px
+        }
+
+        .admin-panel {
+            display: none
+        }
+
+        .admin-panel.active {
+            display: block
+        }
+
+        .admin-rows {
+            max-height: 48vh;
+            overflow: auto
+        }
+    </style>
+</head>
+
+<body data-page="more">
+    <div id="site-navbar"></div>
+    <main>
+        <section class="page">
+            <aside class="command-rail">
+                <div class="command-brand">VANSIDE<span>ADMIN</span></div>
+                <div class="command-label">CONTROL CENTER</div>
+                <button class="command-link active" data-command-tab="overview">◈ <span>Overview</span></button>
+                <button class="command-link" data-command-tab="users">♙ <span>Users</span></button>
+                <button class="command-link" data-command-tab="tournaments">♛ <span>Tournaments</span></button>
+                <button class="command-link" data-command-tab="middleman">⚔ <span>Matches</span></button>
+                <button class="command-link" data-command-tab="clans">♟ <span>Clans</span></button>
+                <button class="command-link" data-command-tab="wallet">◇ <span>Wallet</span></button>
+                <button class="command-link" data-command-tab="results">! <span>Reports</span></button>
+                <button class="command-link" data-command-tab="ai">⌁ <span>Security</span></button>
+                <button class="command-link" data-command-tab="analytics">▥ <span>Analytics</span></button>
+                <button class="command-signout" id="commandSignOut">Sign out →</button>
+            </aside>
+            <div class="container">
+                <div class="command-head">
+                    <div>
+                        <div class="eyebrow">ADMIN / OVERVIEW</div>
+                        <h1>Command Center</h1>
+                        <p class="muted">Manage Vanside Arena tournaments, players, matches and platform operations.</p>
+                    </div>
+                    <div class="admin-user-card"><strong>Administrator</strong><span>Super Admin • Online</span></div>
+                </div>
+                <div class="command-metrics">
+                    <div class="command-metric"><span>Total Players</span><strong id="overviewUsers">0</strong><small>↑
+                            platform accounts</small></div>
+                    <div class="command-metric"><span>Active Tournaments</span><strong
+                            id="overviewTournaments">0</strong><small>↑ registrations</small></div>
+                    <div class="command-metric"><span>Live Matches</span><strong id="overviewMatches">0</strong><small>●
+                            monitored now</small></div>
+                    <div class="command-metric"><span>Wallet Volume</span><strong
+                            id="overviewWallet">0</strong><small>coins • local ledger</small></div>
+                </div>
+                <div class="command-grid">
+                    <div class="card command-pulse">
+                        <h2>Tournament Pulse</h2>
+                        <p class="muted small">Latest competitions on the platform</p>
+                        <div id="overviewTournamentsList" class="list mt">
+                            <p class="muted">No tournaments created yet.</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h2>Live Activity</h2>
+                        <p class="muted small">Recent admin events</p>
+                        <div class="activity-list mt">
+                            <p>● Admin dashboard initialized</p>
+                            <p>● Platform monitoring is online</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h2>Platform Health</h2>
+                        <p class="muted small">Operational checks</p>
+                        <div class="health-item mt">Match services <b>99.9%</b><i></i></div>
+                        <div class="health-item">Anti-cheat <b>ON</b><i></i></div>
+                        <div class="health-item">Payment ledger <b>READY</b><i></i></div>
+                    </div>
+                    <div class="card">
+                        <h2>Quick Actions</h2>
+                        <p class="muted small">Common admin operations</p>
+                        <div class="quick-actions mt"><button class="btn btn-primary" data-quick-tab="tournaments">+
+                                Tournament</button><button class="btn btn-outline" data-quick-tab="users">+
+                                Player</button><button class="btn btn-outline" data-quick-tab="middleman">Review
+                                Matches</button><button class="btn btn-outline" data-quick-tab="results">Review
+                                Reports</button></div>
+                    </div>
+                </div>
+                <div class="section-head">
+                    <div>
+                        <div class="eyebrow">ADMIN</div>
+                        <h1>Admin Dashboard</h1>
+                        <p class="muted">Command center for players, matches, tournaments, reports and platform
+                            operations.</p>
+                    </div>
+                </div>
+
+                <div class="card mt">
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                        <button id="adminSignIn" class="btn btn-primary">Sign in as admin</button>
+                        <button id="adminSignOut" class="btn btn-outline">Sign out</button>
+                        <button id="importData" class="btn">Import JSON</button>
+                        <button id="exportData" class="btn">Export JSON</button>
+                        <div style="margin-left:auto" id="adminStatus" class="muted small">Not signed in</div>
+                    </div>
+                </div>
+
+                <div class="card mt">
+                    <div class="admin-tabs" id="tabs"></div>
+                    <div class="admin-panels">
+                        <div id="panel-users" class="admin-panel">
+                            <h3>1. User Management</h3>
+                            <div style="display:flex;gap:8px;margin-bottom:8px">
+                                <input id="newUserName" placeholder="Name" class="input" style="width:200px" />
+                                <input id="newUserEmail" placeholder="Email" class="input" style="width:240px" />
+                                <button id="createUser" class="btn btn-primary">Create user</button>
+                            </div>
+                            <div id="usersList" class="admin-rows list"></div>
+                        </div>
+
+                        <div id="panel-tournaments" class="admin-panel">
+                            <h3>2. Tournament Management</h3>
+                            <div style="display:flex;gap:8px;margin-bottom:8px">
+                                <input id="tName" placeholder="Tournament name" class="input" style="width:260px" />
+                                <input id="tFee" placeholder="Entry fee" class="input" style="width:120px" />
+                                <button id="createTournament" class="btn btn-primary">Create tournament</button>
+                            </div>
+                            <div id="tournamentsList" class="admin-rows list"></div>
+                        </div>
+
+                        <div id="panel-leagues" class="admin-panel">
+                            <h3>3. League Management</h3>
+                            <div style="display:flex;gap:8px;margin-bottom:8px">
+                                <input id="lName" placeholder="League name" class="input" style="width:260px" />
+                                <button id="createLeague" class="btn btn-primary">Create league</button>
+                            </div>
+                            <div id="leaguesList" class="admin-rows list"></div>
+                        </div>
+
+                        <div id="panel-clans" class="admin-panel">
+                            <h3>4. Clan Management</h3>
+                            <div style="display:flex;gap:8px;margin-bottom:8px">
+                                <input id="cGame" placeholder="Game key (e.g. valorant)" class="input"
+                                    style="width:180px" />
+                                <input id="cName" placeholder="Clan name" class="input" style="width:200px" />
+                                <button id="createClanAdmin" class="btn btn-primary">Create clan</button>
+                            </div>
+                            <div id="clansList" class="admin-rows list"></div>
+                        </div>
+
+                        <div id="panel-events" class="admin-panel">
+                            <h3>5. Event Management</h3>
+                            <div style="display:flex;gap:8px;margin-bottom:8px">
+                                <input id="eName" placeholder="Event name" class="input" style="width:260px" />
+                                <button id="createEvent" class="btn btn-primary">Create event</button>
+                            </div>
+                            <div id="eventsList" class="admin-rows list"></div>
+                        </div>
+
+                        <div id="panel-wallet" class="admin-panel">
+                            <h3>6. Wallet & Payments</h3>
+                            <div style="display:flex;gap:8px;margin-bottom:8px">
+                                <input id="wEmail" placeholder="User email" class="input" style="width:240px" />
+                                <input id="wAmount" placeholder="Amount (+/-)" class="input" style="width:120px" />
+                                <button id="adjustWallet" class="btn btn-primary">Adjust</button>
+                            </div>
+                            <div id="walletList" class="admin-rows list"></div>
+                        </div>
+
+                        <div id="panel-middleman" class="admin-panel">
+                            <h3>7. Middleman Dashboard</h3>
+                            <div id="middlemanList" class="admin-rows list"></div>
+                        </div>
+
+                        <div id="panel-results" class="admin-panel">
+                            <h3>Result Reports</h3>
+                            <div id="reportsList" class="admin-rows list"></div>
+                        </div>
+
+                        <div id="panel-ai" class="admin-panel">
+                            <h3>8. AI Dev (Anti-cheat / Anti-bot / Anti-scam)</h3>
+                            <p class="muted">Prototype toggles and logs for AI subsystems (demo).</p>
+                            <div style="display:flex;gap:8px;margin-bottom:8px">
+                                <button id="toggleAntiCheat" class="btn btn-outline">Toggle Anti-Cheat</button>
+                                <button id="toggleAntiBot" class="btn btn-outline">Toggle Anti-Bot</button>
+                                <button id="toggleAntiScam" class="btn btn-outline">Toggle Anti-Scam</button>
+                            </div>
+                            <div id="aiLogs" class="admin-rows list"></div>
+                        </div>
+
+                        <div id="panel-settings" class="admin-panel">
+                            <h3>9. Settings</h3>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                                <label style="display:flex;gap:8px;align-items:center"><input id="settingDemo"
+                                        type="checkbox" /> Demo mode</label>
+                            </div>
+                        </div>
+
+                        <div id="panel-analytics" class="admin-panel">
+                            <h3>10. Analytics</h3>
+                            <div id="analyticsStats" class="list"></div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-inner">
+            <div><strong>VANSIDE ARENA</strong>
+                <div class="small">Operations console</div>
+            </div>
+            <div class="small">© 2026 Vanside Arena</div>
+        </div>
+    </footer>
+
+    <div class="toast"></div>
+    <script src="app.js"></script>
+    <script>
+        // Admin console behaviors, backed by local browser records.
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = [
+                { id: 'users', label: 'Users' },
+                { id: 'tournaments', label: 'Tournaments' },
+                { id: 'leagues', label: 'Leagues' },
+                { id: 'clans', label: 'Clans' },
+                { id: 'events', label: 'Events' },
+                { id: 'wallet', label: 'Wallet' },
+                { id: 'middleman', label: 'Middleman' },
+                { id: 'results', label: 'Reports' },
+                { id: 'ai', label: 'AI Dev' },
+                { id: 'settings', label: 'Settings' },
+                { id: 'analytics', label: 'Analytics' },
+            ];
+
+            const tabsEl = document.getElementById('tabs');
+            tabs.forEach(t => {
+                const b = document.createElement('button'); b.className = 'admin-tab'; b.textContent = t.label; b.dataset.tab = t.id; tabsEl.appendChild(b);
+            });
+
+            function showTab(id) {
+                document.querySelectorAll('.admin-tab').forEach(x => x.classList.toggle('active', x.dataset.tab === id));
+                document.querySelectorAll('.admin-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + id));
+            }
+            showTab('users');
+            tabsEl.addEventListener('click', e => { const b = e.target.closest('.admin-tab'); if (b) showTab(b.dataset.tab); });
+            document.querySelectorAll('[data-command-tab]').forEach(button => button.onclick = () => showTab(button.dataset.commandTab));
+            document.getElementById('commandSignOut').onclick = () => document.getElementById('adminSignOut').click();
+            document.querySelectorAll('[data-quick-tab]').forEach(button => button.onclick = () => showTab(button.dataset.quickTab));
+
+            const status = document.getElementById('adminStatus');
+            function refreshStatus() { const u = getUser(); status.textContent = u ? `${u.name}${u.isAdmin ? ' • Admin' : ''}` : 'Not signed in'; }
+            refreshStatus();
+
+            document.getElementById('adminSignIn').onclick = () => {
+                const email = prompt('Admin email', 'admin@local'); const pwd = prompt('Admin password');
+                if (email !== 'admin@local' || pwd !== 'admin') { toast('Invalid admin credentials'); return; }
+                const u = getUser() || { name: 'Admin', email: 'admin@local' }; u.name = 'Admin'; u.email = email; u.isAdmin = true; setUser(u); registerUser(u); toast('Signed in as admin'); refreshStatus(); renderAll();
+            };
+            document.getElementById('adminSignOut').onclick = () => { const u = getUser(); if (u) { u.isAdmin = false; setUser(u); toast('Signed out'); } refreshStatus(); };
+
+            // import/export
+            document.getElementById('exportData').onclick = () => {
+                const dump = {
+                    users: JSON.parse(localStorage.getItem('vanside-users') || '[]'),
+                    clans: JSON.parse(localStorage.getItem('vanside-clans') || '{}'),
+                    tournaments: JSON.parse(localStorage.getItem('vanside-tournaments') || '[]'),
+                    leagues: JSON.parse(localStorage.getItem('vanside-leagues') || '[]'),
+                    events: JSON.parse(localStorage.getItem('vanside-events') || '[]'),
+                    hostmatches: JSON.parse(localStorage.getItem('vanside-hostmatches') || '[]'),
+                    wallet: JSON.parse(localStorage.getItem('vanside-wallet') || '[]')
+                };
+                prompt('Export JSON (copy)', JSON.stringify(dump, null, 2));
+            };
+            document.getElementById('importData').onclick = () => {
+                const txt = prompt('Paste JSON to import');
+                if (!txt) return;
+                try {
+                    const obj = JSON.parse(txt);
+                    Object.keys(obj).forEach(k => {
+                        const key = k.startsWith('vanside-') ? k : `vanside-${k}`;
+                        localStorage.setItem(key, JSON.stringify(obj[k]));
+                    });
+                    toast('Imported'); renderAll();
+                } catch (e) { toast('Invalid JSON'); }
+            };
+
+            // render helpers
+            function getList(key) { return JSON.parse(localStorage.getItem(key) || '[]'); }
+            function setList(key, arr) { localStorage.setItem(key, JSON.stringify(arr)); }
+
+            // USERS
+            function renderUsers() {
+                const container = document.getElementById('usersList'); const list = getList('vanside-users');
+                container.innerHTML = list.length ? list.map(u => `<div class="list-row"><div class="avatar">${(u.name || '?')[0]}</div><div><strong>${u.name}</strong><div class="muted small">${u.email}</div></div><div><button class="btn btn-outline small del-user" data-email="${u.email}">Delete</button></div></div>`).join('') : '<div class="muted">No users</div>';
+                container.querySelectorAll('.del-user').forEach(b => b.onclick = (e) => {
+                    const email = e.currentTarget.dataset.email;
+                    showConfirm('Delete user ' + email + '?', () => {
+                        setList('vanside-users', list.filter(x => x.email !== email));
+                        toast('User deleted');
+                        renderUsers();
+                    });
+                });
+            }
+            document.getElementById('createUser').onclick = () => { const name = document.getElementById('newUserName').value.trim(); const email = document.getElementById('newUserEmail').value.trim(); if (!email) { toast('Email required'); return; } const list = getList('vanside-users'); list.push({ name, email, coins: 0 }); setList('vanside-users', list); toast('User created'); renderUsers(); };
+
+            // TOURNAMENTS
+            function renderTournaments() { const c = document.getElementById('tournamentsList'); const list = getList('vanside-tournaments'); c.innerHTML = list.length ? list.map(t => `<div class="list-row"><div style="width:42px"><div class="avatar">T</div></div><div><strong>${t.name}</strong><div class="muted small">Fee: ${t.fee || 0}</div></div><div><button class="btn btn-outline small del-t" data-id="${t.id}">Delete</button></div></div>`).join('') : '<div class="muted">No tournaments</div>'; c.querySelectorAll('.del-t').forEach(b => b.onclick = e => { const id = e.currentTarget.dataset.id; showConfirm('Delete tournament?', () => { setList('vanside-tournaments', list.filter(x => x.id !== id)); toast('Deleted'); renderTournaments(); }); }); }
+            document.getElementById('createTournament').onclick = () => { const name = document.getElementById('tName').value.trim(); const fee = +document.getElementById('tFee').value || 0; if (!name) { toast('Name required'); return; } const list = getList('vanside-tournaments'); const id = 't' + Date.now(); list.push({ id, name, fee }); setList('vanside-tournaments', list); toast('Created'); renderTournaments(); };
+
+            // LEAGUES
+            function renderLeagues() { const c = document.getElementById('leaguesList'); const list = getList('vanside-leagues'); c.innerHTML = list.length ? list.map(l => `<div class="list-row"><div style="width:42px"></div><div><strong>${l}</strong></div><div><button class="btn btn-outline small del-l" data-name="${l}">Delete</button></div></div>`).join('') : '<div class="muted">No leagues</div>'; c.querySelectorAll('.del-l').forEach(b => b.onclick = e => { const name = e.currentTarget.dataset.name; showConfirm('Delete league?', () => { setList('vanside-leagues', list.filter(x => x !== name)); toast('Deleted'); renderLeagues(); }); }); }
+            document.getElementById('createLeague').onclick = () => { const name = document.getElementById('lName').value.trim(); if (!name) { toast('Name required'); return; } const list = getList('vanside-leagues'); list.push(name); setList('vanside-leagues', list); toast('Created'); renderLeagues(); };
+
+            // CLANS
+            function renderClans() {
+                const c = document.getElementById('clansList'); const data = JSON.parse(localStorage.getItem('vanside-clans') || '{}'); const games = Object.keys(data); c.innerHTML = games.length ? games.map(g => `<div class="eyebrow">${g}</div>${data[g].map(cl => `<div class="list-row"><div class="avatar">${cl.name[0] || '?'}</div><div><strong>${cl.name}</strong><div class="muted small">${cl.members} • ${cl.tag}</div></div><div><button class="btn btn-outline small del-cl" data-game="${g}" data-tag="${cl.tag}">Delete</button></div></div>`).join('')}`).join('') : '<div class="muted">No clans</div>';
+                c.querySelectorAll('.del-cl').forEach(b => b.onclick = e => { const g = e.currentTarget.dataset.game, tag = e.currentTarget.dataset.tag; showConfirm('Delete clan ' + tag + '?', () => { const obj = JSON.parse(localStorage.getItem('vanside-clans') || '{}'); obj[g] = (obj[g] || []).filter(x => x.tag !== tag); localStorage.setItem('vanside-clans', JSON.stringify(obj)); toast('Deleted'); renderClans(); }); });
+            }
+            document.getElementById('createClanAdmin').onclick = () => { const game = document.getElementById('cGame').value.trim(); const name = document.getElementById('cName').value.trim(); if (!game || !name) { toast('Game and name required'); return; } const obj = JSON.parse(localStorage.getItem('vanside-clans') || '{}'); obj[game] = obj[game] || []; const tag = '#' + Math.floor(100 + Math.random() * 900); obj[game].push({ name, members: 1, tag }); localStorage.setItem('vanside-clans', JSON.stringify(obj)); toast('Clan created'); renderClans(); };
+
+            // EVENTS
+            function renderEvents() { const c = document.getElementById('eventsList'); const list = getList('vanside-events'); c.innerHTML = list.length ? list.map(ev => `<div class="list-row"><div style="width:42px"><div class="avatar">E</div></div><div><strong>${ev.name}</strong></div><div><button class="btn btn-outline small del-ev" data-id="${ev.id}">Delete</button></div></div>`).join('') : '<div class="muted">No events</div>'; c.querySelectorAll('.del-ev').forEach(b => b.onclick = e => { const id = e.currentTarget.dataset.id; showConfirm('Delete event?', () => { setList('vanside-events', list.filter(x => x.id !== id)); toast('Deleted'); renderEvents(); }); }); }
+            document.getElementById('createEvent').onclick = () => { const name = document.getElementById('eName').value.trim(); if (!name) { toast('Name required'); return; } const list = getList('vanside-events'); list.push({ id: 'ev' + Date.now(), name }); setList('vanside-events', list); toast('Created'); renderEvents(); };
+
+            // WALLET
+            function renderWallet() { const c = document.getElementById('walletList'); const tx = getList('vanside-wallet'); c.innerHTML = tx.length ? tx.map(t => `<div class="list-row"><div style="width:42px"></div><div><strong>${t.email}</strong><div class="muted small">${t.amount} • ${t.note || ''}</div></div></div>`).join('') : '<div class="muted">No transactions</div>'; }
+            document.getElementById('adjustWallet').onclick = () => { const email = document.getElementById('wEmail').value.trim(); const amount = Number(document.getElementById('wAmount').value) || 0; if (!email || !amount) { toast('Email and non-zero amount required'); return; } const users = getList('vanside-users'); const u = users.find(x => x.email === email); if (!u) { toast('User not found'); return; } u.coins = (u.coins || 0) + amount; setList('vanside-users', users); const tx = getList('vanside-wallet'); tx.unshift({ email, amount, note: 'admin-adjust', ts: Date.now() }); setList('vanside-wallet', tx); toast('Adjusted'); renderWallet(); renderUsers(); };
+
+            // MIDDLEMEN
+            function renderMiddleman() { const c = document.getElementById('middlemanList'); const list = getList('vanside-hostmatches'); c.innerHTML = list.length ? list.map(m => `<div class="list-row"><div style="width:42px"><div class="avatar">H</div></div><div><strong>${m.title}</strong><div class="muted small">${m.game} • ${m.slot}</div></div></div>`).join('') : '<div class="muted">No host matches</div>'; }
+            function renderReports() { const c = document.getElementById('reportsList'); const list = getList('vanside-reports'); c.innerHTML = list.length ? list.map(r => `<div class="list-row"><div class="avatar">R</div><div><strong>${r.matchId}</strong><div class="muted small">${r.player} • ${r.status}</div><div class="small">${r.proof}</div></div></div>`).join('') : '<div class="muted">No reports</div>'; }
+
+            // AI DEV (demo toggles)
+            const aiState = { antiCheat: false, antiBot: false, antiScam: false };
+            function renderAI() { document.getElementById('aiLogs').innerHTML = `<div class="muted">AntiCheat:${aiState.antiCheat} AntiBot:${aiState.antiBot} AntiScam:${aiState.antiScam}</div>`; }
+            document.getElementById('toggleAntiCheat').onclick = () => { aiState.antiCheat = !aiState.antiCheat; toast('AntiCheat ' + (aiState.antiCheat ? 'enabled' : 'disabled')); renderAI(); };
+            document.getElementById('toggleAntiBot').onclick = () => { aiState.antiBot = !aiState.antiBot; toast('AntiBot ' + (aiState.antiBot ? 'enabled' : 'disabled')); renderAI(); };
+            document.getElementById('toggleAntiScam').onclick = () => { aiState.antiScam = !aiState.antiScam; toast('AntiScam ' + (aiState.antiScam ? 'enabled' : 'disabled')); renderAI(); };
+
+            // ANALYTICS
+            function renderAnalytics() {
+                const stats = {
+                    users: getList('vanside-users').length,
+                    clans: Object.values(JSON.parse(localStorage.getItem('vanside-clans') || '{}')).flat().length,
+                    tournaments: getList('vanside-tournaments').length,
+                    revenue: getList('vanside-wallet').filter(t => t.amount > 0).reduce((s, t) => s + Math.abs(t.amount), 0)
+                }; document.getElementById('analyticsStats').innerHTML = `<div class="list-row"><div><strong>Users</strong><div class="muted">${stats.users}</div></div></div><div class="list-row"><div><strong>Clans</strong><div class="muted">${stats.clans}</div></div></div><div class="list-row"><div><strong>Tournaments</strong><div class="muted">${stats.tournaments}</div></div></div><div class="list-row"><div><strong>Revenue (demo)</strong><div class="muted">₹${stats.revenue}</div></div></div>`;
+            }
+
+            function renderAll() { renderUsers(); renderTournaments(); renderLeagues(); renderClans(); renderEvents(); renderWallet(); renderMiddleman(); renderReports(); renderAI(); renderAnalytics(); renderOverview(); refreshStatus(); }
+            function renderOverview() {
+                const users = getList('vanside-users'); const tournaments = getList('vanside-tournaments'); const matches = getList('vanside-hostmatches'); const wallet = getList('vanside-wallet');
+                document.getElementById('overviewUsers').textContent = users.length;
+                document.getElementById('overviewTournaments').textContent = tournaments.length;
+                document.getElementById('overviewMatches').textContent = matches.length;
+                document.getElementById('overviewWallet').textContent = wallet.reduce((sum, item) => sum + Math.abs(Number(item.amount) || 0), 0);
+                const list = document.getElementById('overviewTournamentsList'); list.innerHTML = tournaments.length ? tournaments.slice(0, 3).map(item => `<div class="list-row"><div class="avatar">T</div><div><strong>${item.name}</strong><div class="muted small">${item.game || 'Arena'} • ${item.players || 0}/${item.slots || 64} players</div></div><span class="badge">${item.status || 'OPEN'}</span></div>`).join('') : '<p class="muted">No tournaments created yet.</p>';
+            }
+            renderAll();
+
+        });
+    </script>
+</body>
+
+</html>
